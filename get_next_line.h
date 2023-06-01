@@ -22,11 +22,10 @@
 #  define BUFFER_SIZE 42
 # endif
 
-# ifndef STASH_SIZE
-#  define STASH_SIZE 1024
-# endif
-
 // PROTOTYPES //
 char	*get_next_line(int fd);
+char	*ft_strdup_gnl(const char *str);
+
+size_t	ft_strlen_gnl(const char *str);
 
 #endif

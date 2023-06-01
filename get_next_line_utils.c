@@ -21,3 +21,21 @@ size_t	ft_strlen_gnl(const char *str)
 		len++;
 	return (len);
 }
+
+char	*ft_strdup_gnl(const char *str)
+{
+	char	*target;
+	size_t	i;
+
+	target = malloc(sizeof(char) * ft_strlen_gnl(str) + 1);
+	if (target == NULL)
+		return (NULL);
+	i = 0;
+	while (str[i])
+	{
+		target[i] = str[i];
+		i++;
+	}
+	target[i] = '\0';
+	return (target);
+}
