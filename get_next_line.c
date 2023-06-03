@@ -6,7 +6,7 @@
 /*   By: lyap <lyap@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/29 13:02:10 by lyap              #+#    #+#             */
-/*   Updated: 2023/05/29 13:26:19 by lyap             ###   ########.fr       */
+/*   Updated: 2023/06/03 17:26:06 by lyap             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,9 @@ you read the text file pointed to by the file descriptor, one line at a time.
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <unistd.h>
 
-#define BUFFER_SIZE 42
+#define BUFFER_SIZE 100
 
 size_t	ft_strlen_gnl(const char *str)
 {
@@ -117,17 +118,17 @@ char	*ft_substr_gnl(char const *s, unsigned int start, size_t len)
 int	ft_check_nl(char *str)
 {
 	int	i;
-	
+
 	i = 0;
 	if (!str)
-		return (0);
+		return (-1);
 	while (str[i])
 	{
 		if (str[i] == '\n')
-			return (i + 1);
+			return (i);
 		i++;
 	}
-	return (i + 1);
+	return (-1);
 }
 
 char	*ft_strjoin_gnl(char const *s1, char const *s2)
@@ -148,7 +149,7 @@ char	*ft_buffer_balance(char *stash, int *nl_pos)
 {
 	char	*balance;
 
-	balance = ft_substr_gnl(stash, *nl_pos,
+	balance = ft_substr_gnl(stash, *nl_pos + 1,
 			(ft_strlen_gnl(stash) - *nl_pos - 1));
 	return (balance);
 }
@@ -158,9 +159,11 @@ char	*ft_extract_line(char *stash, int *nl_pos)
 	char	*line;
 
 	while (stash[*nl_pos] && stash[*nl_pos] != '\n')
-		nl_pos++;
-	line = ft_substr_gnl(stash, 0,*nl_pos);
-	line[*nl_pos] = '\n';
+		*nl_pos = *nl_pos + 1;
+	line = ft_substr_gnl(stash, 0, *nl_pos);
+	if (ft_strlen_gnl(stash) != (unsigned long)*nl_pos)
+		line[*nl_pos] = '\n';
+	line[*nl_pos + 1] = '\0';
 	return (line);
 }
 
@@ -168,28 +171,22 @@ char	*ft_read_to_buffer(int fd, char *stash)
 {
 	int		bytes_read;
 	char	*buffer;
-	char	*temp;
 
 	bytes_read = 1;
 	buffer = malloc(sizeof(char) * (BUFFER_SIZE + 1));
 	if (!buffer)
 		return (NULL);
-	while (bytes_read != 0 && ft_check_nl(stash) == 0)
+	while (bytes_read != 0 && ft_check_nl(stash) < 0)
 	{
 		bytes_read = read(fd, buffer, BUFFER_SIZE);
-		printf("bytes_read = %d\n", bytes_read);
 		if (bytes_read == -1)
 		{
 			free (buffer);
 			return (NULL);
 		}
 		buffer[bytes_read] = '\0';
-		printf("BUFFER RTB: %s\n", buffer);
-		printf("STASH RTB: %s\n", stash);
-		temp = ft_strjoin_gnl(stash, buffer);
-		printf("STASH RTB: %s\n", temp);
+		stash = ft_strjoin_gnl(stash, buffer);
 	}
-	printf("stage 4\n");
 	free (buffer);
 	return (stash);
 }
@@ -202,15 +199,14 @@ char	*get_next_line(int fd)
 
 	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
 		return (NULL);
+	if (!stash)
+		stash = ft_strdup_gnl("");
 	stash = ft_read_to_buffer(fd, stash);
-	printf("STASH GNL: %s\n", stash);
 	if (!stash)
 		return (NULL);
 	nl_pos = 0;
 	line = ft_extract_line(stash, &nl_pos);
-	printf("stage 2 GNL\n");
 	stash = ft_buffer_balance(stash, &nl_pos);
-	free(stash);
 	return (line);
 }
 
@@ -221,10 +217,22 @@ int	main(void)
 
 	fd1 = open("tests/test.txt", O_RDONLY);
 	line = get_next_line(fd1);
-	printf("line 1: %s\n", line);
+	printf("line 1: %s", line);
 	free(line);
 	line = get_next_line(fd1);
-	printf("line 2: %s\n", line);
+	printf("line 2: %s", line);
+	free(line);
+	line = get_next_line(fd1);
+	printf("line 3: %s", line);
+	free(line);
+	line = get_next_line(fd1);
+	printf("line 4: %s", line);
+	free(line);
+	line = get_next_line(fd1);
+	printf("line 5: %s", line);
+	free(line);
+	line = get_next_line(fd1);
+	printf("line 6: %s", line);
 	free(line);
 	return (0);
 }
