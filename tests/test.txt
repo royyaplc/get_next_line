@@ -1,0 +1,5 @@
+This is line 1 of text file.
+This is line 2 of text file.
+This is line 3 of text file.
+This is line 4 of text file.
+This is the last line of text file.
