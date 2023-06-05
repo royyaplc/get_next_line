@@ -145,26 +145,25 @@ char	*ft_strjoin_gnl(char const *s1, char const *s2)
 	return (joined);
 }
 
-char	*ft_buffer_balance(char *stash, int *nl_pos)
-{
-	char	*balance;
-
-	balance = ft_substr_gnl(stash, *nl_pos + 1,
-			(ft_strlen_gnl(stash) - *nl_pos - 1));
-	return (balance);
-}
-
-char	*ft_extract_line(char *stash, int *nl_pos)
+char	*ft_extract_line(char *stash, int lob)
 {
 	char	*line;
-
-	while (stash[*nl_pos] && stash[*nl_pos] != '\n')
-		*nl_pos = *nl_pos + 1;
-	line = ft_substr_gnl(stash, 0, *nl_pos);
-	if (ft_strlen_gnl(stash) != (unsigned long)*nl_pos)
-		line[*nl_pos] = '\n';
-	line[*nl_pos + 1] = '\0';
-	return (line);
+	char	*balance;
+	int		nl_pos;
+	
+	nl_pos = 0;
+	while (stash[nl_pos] && stash[nl_pos] != '\n')
+		nl_pos++;
+	line = ft_substr_gnl(stash, 0, nl_pos);
+	if (ft_strlen_gnl(stash) != (unsigned long)nl_pos)
+		line[nl_pos] = '\n';
+	line[nl_pos + 1] = '\0';
+	balance = ft_substr_gnl(stash, nl_pos + 1,
+			(ft_strlen_gnl(stash) - nl_pos - 1));
+	if (lob)
+		return (line);
+	else
+		return (balance);
 }
 
 char	*ft_read_to_buffer(int fd, char *stash)
@@ -195,7 +194,6 @@ char	*get_next_line(int fd)
 {
 	static char	*stash;
 	char		*line;
-	int			nl_pos;
 
 	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
 		return (NULL);
@@ -204,9 +202,8 @@ char	*get_next_line(int fd)
 	stash = ft_read_to_buffer(fd, stash);
 	if (!stash)
 		return (NULL);
-	nl_pos = 0;
-	line = ft_extract_line(stash, &nl_pos);
-	stash = ft_buffer_balance(stash, &nl_pos);
+	line = ft_extract_line(stash, 1);
+	stash = ft_extract_line(stash, 0);
 	return (line);
 }
 
